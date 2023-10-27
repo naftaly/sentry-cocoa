@@ -61,6 +61,40 @@ ViewController ()
     NSLog(@"%@", eventId);
 }
 
+- (void)factorialIterative:(int)x {
+    int result = 1;
+    int next = x;
+    while (x > 1) {
+        result *= next;
+        next -= 1;
+    }
+    return next;
+}
+
+- (void)factorialRecursive:(int)x {
+    if (x == 0) {
+        return 1;
+    }
+    return [self factorialRecursive:x - 1];
+}
+
+- (IBAction)testMachPortDeallocateCrash:(id)sender {
+    while(YES) {
+        id<SentrySpan> span = [SentrySDK startTransactionWithName:@"test" operation:@"mach-port-deallocate"];
+
+        while (!span.isFinished) {
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                uint32_t rand = arc4random();
+                if (rand % 2 == 0) {
+                    return [self factorialIterative:rand % 100];
+                } else {
+                    return [self factorialIterative:rand % 100];
+                }
+            });
+        }
+    }
+}
+
 - (IBAction)captureUserFeedback:(id)sender
 {
     NSError *error =

@@ -49,7 +49,7 @@
 #        import <UIKit/UIKit.h>
 #    endif // SENTRY_HAS_UIKIT
 
-const int kSentryProfilerFrequencyHz = 101;
+const int kSentryProfilerFrequencyHz = 1001;
 NSTimeInterval kSentryProfilerTimeoutInterval = 30;
 
 NSString *const kSentryProfilerSerializationKeySlowFrameRenders = @"slow_frame_renders";
