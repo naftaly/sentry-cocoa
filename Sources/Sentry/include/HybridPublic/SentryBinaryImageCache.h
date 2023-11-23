@@ -6,6 +6,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *name;
 @property (nonatomic) uint64_t address;
 @property (nonatomic) uint64_t size;
+@property (nonatomic, copy) NSDate *startReadingPages;
+@property (nonatomic, copy) NSDate *endReadingPages;
 @end
 
 /**
@@ -20,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)stop;
 
 - (nullable SentryBinaryImageInfo *)imageByAddress:(const uint64_t)address;
+
+- (NSArray<SentryBinaryImageInfo *> *)imagesSortedByAddedDate;
 
 @end
 

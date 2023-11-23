@@ -1,4 +1,7 @@
 #import "SentryAppStartMeasurement.h"
+#import "SentryBinaryImageCache.h"
+#import "SentryDependencyContainer.h"
+#import "SentryLog.h"
 #import "SentrySpan.h"
 #import "SentrySpanContext+Private.h"
 #import "SentrySpanId.h"
@@ -85,6 +88,40 @@ sentryBuildAppStartSpans(SentryTracer *tracer, SentryAppStartMeasurement *appSta
     [frameRenderSpan setStartTimestamp:appStartMeasurement.didFinishLaunchingTimestamp];
     [frameRenderSpan setTimestamp:appStartEndTimestamp];
     [appStartSpans addObject:frameRenderSpan];
+
+    NSArray<SentryBinaryImageInfo *> *images =
+        [SentryDependencyContainer.sharedInstance.binaryImageCache imagesSortedByAddedDate];
+
+    for (SentryBinaryImageInfo *imageInfo in images) {
+        NSArray *systemLibraryPrefixes =
+            @[ @"/System/Library/", @"/usr/lib/", @"/Library/Developer/" ];
+
+        BOOL systemLib = NO;
+        for (NSString *prefix in systemLibraryPrefixes) {
+            if ([imageInfo.name hasPrefix:prefix]) {
+                systemLib = YES;
+                break;
+            }
+        }
+
+        SentrySpan *imageSpan = nil;
+        if (systemLib) {
+            imageSpan = sentryBuildAppStartSpan(tracer, tracer.spanId, @"read.pages.system_binary",
+                [imageInfo.name lastPathComponent]);
+        } else {
+            imageSpan = sentryBuildAppStartSpan(tracer, tracer.spanId, @"read.pages.app_binary",
+                [imageInfo.name lastPathComponent]);
+        }
+
+        NSComparisonResult result = [imageInfo.startReadingPages compare:imageInfo.endReadingPages];
+        if (result == NSOrderedAscending) {
+            [imageSpan setStartTimestamp:imageInfo.startReadingPages];
+            [imageSpan setTimestamp:imageInfo.endReadingPages];
+            if (imageSpan) {
+                [appStartSpans addObject:imageSpan];
+            }
+        }
+    }
 
     return appStartSpans;
 }

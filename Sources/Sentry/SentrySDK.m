@@ -18,6 +18,55 @@
 #import "SentryThreadWrapper.h"
 #import "SentryUIDeviceWrapper.h"
 
+#import <QuartzCore/QuartzCore.h>
+#import <dlfcn.h>
+#import <mach-o/dyld.h>
+#import <mach-o/getsect.h>
+
+// void imageAdded(const struct mach_header *header, intptr_t slide) {
+//   Dl_info info = {0};
+//   dladdr(header, &info);
+//   NSString *path = @(info.dli_fname);
+//   // Replace this string with the name of the app binary you're testing.
+//   if ([[path lastPathComponent] isEqualToString:@"MainAppBinary"]) {
+//     return;
+//   }
+//
+//   unsigned long segment_size = 0;
+//   uint8_t *segment_start = getsegmentdata((struct mach_header_64 *) header, "__TEXT",
+//   &segment_size); unsigned long pages = segment_size/16384; NSMutableArray<NSNumber *>
+//   *pagesArray = [NSMutableArray new]; for (int i = 0; i < pages; i++) {
+//     [pagesArray addObject:@(i)];
+//   }
+//   // Uncomment this line to measure faults in a random order.;
+////    NSUInteger count = [pagesArray count];
+////    for (NSUInteger i = 0; i < count; ++i) {
+////        NSInteger remainingCount = count - i;
+////        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t )remainingCount);
+////        [pagesArray exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
+////    }
+//
+//    double startTime = CACurrentMediaTime();
+//  for(int i = 0; i < pagesArray.count; i++) {
+//    unsigned char volatile * ptr = (unsigned char *) segment_start + (pagesArray[i].longLongValue
+//    * 16384);
+//
+//    unsigned char result = *ptr;
+//      if (result) {
+//
+//      }
+//
+//  }
+//    double duration = (CACurrentMediaTime() - startTime)*1000;
+//    printf("%fms - %s\n", duration, [[path lastPathComponent]
+//    cStringUsingEncoding:NSUTF8StringEncoding]);
+//}
+//
+//__attribute__((constructor)) void prepare(void);
+//__attribute__((constructor)) void prepare(void) {
+//  _dyld_register_func_for_add_image(imageAdded);
+//}
+
 @interface
 SentrySDK ()
 

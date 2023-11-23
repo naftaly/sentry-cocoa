@@ -31,6 +31,7 @@
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 #include <mach-o/nlist.h>
+#import <mach/mach_time.h>
 #include <string.h>
 
 #include "SentryCrashLogger.h"
@@ -403,6 +404,27 @@ sentrycrashdl_getBinaryImageForHeader(const void *const header_ptr, const char *
         cmdPtr += loadCmd->cmdsize;
     }
 
+    // Code is based on
+    // https://gist.github.com/noahsmartin/30604f038ea805b3fe48fa0d714c959e#file-faulttiming-m This
+    // measures page faults in practice by dereferencing a pointer to each page in the binary.
+    unsigned long segment_size = 0;
+    uint8_t *segment_start
+        = getsegmentdata((struct mach_header_64 *)header, "__TEXT", &segment_size);
+    unsigned long pages = segment_size / 16384; // 16 KB
+
+    uint64_t startReadingPages = mach_absolute_time();
+
+    for (unsigned long i = 0; i < pages; i++) {
+        unsigned char volatile *ptr = (unsigned char *)segment_start + (i * 16384);
+
+        unsigned char result = *ptr;
+        if (result) {
+            // empty on purpose
+        }
+    }
+
+    uint64_t endReadingPages = mach_absolute_time();
+
     buffer->address = (uintptr_t)header;
     buffer->vmAddress = imageVmAddr;
     buffer->size = imageSize;
@@ -413,6 +435,8 @@ sentrycrashdl_getBinaryImageForHeader(const void *const header_ptr, const char *
     buffer->majorVersion = version >> 16;
     buffer->minorVersion = (version >> 8) & 0xff;
     buffer->revisionVersion = version & 0xff;
+    buffer->startReadingPages = startReadingPages;
+    buffer->endReadingPages = endReadingPages;
     if (isCrash) {
         getCrashInfo(header, buffer);
     }

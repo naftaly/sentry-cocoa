@@ -47,6 +47,8 @@ typedef struct {
     uint64_t majorVersion;
     uint64_t minorVersion;
     uint64_t revisionVersion;
+    uint64_t startReadingPages;
+    uint64_t endReadingPages;
     const char *crashInfoMessage;
     const char *crashInfoMessage2;
 } SentryCrashBinaryImage;

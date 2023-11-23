@@ -1,6 +1,7 @@
 #import "SentryBinaryImageCache.h"
 #import "SentryCrashBinaryImageCache.h"
 #import "SentryDependencyContainer.h"
+#include <mach/mach_time.h>
 
 static void binaryImageWasAdded(const SentryCrashBinaryImage *image);
 
@@ -38,6 +39,8 @@ SentryBinaryImageCache ()
     newImage.name = [NSString stringWithCString:image->name encoding:NSUTF8StringEncoding];
     newImage.address = image->address;
     newImage.size = image->size;
+    newImage.startReadingPages = [self convertUint:image->startReadingPages];
+    newImage.endReadingPages = [self convertUint:image->endReadingPages];
 
     @synchronized(self) {
         NSUInteger left = 0;
@@ -55,6 +58,30 @@ SentryBinaryImageCache ()
 
         [_cache insertObject:newImage atIndex:left];
     }
+}
+
+- (NSDate *)convertUint:(uint64_t)absoluteTime
+{
+
+    // Step 1: Get timebase info
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+
+    // Step 4: Convert to nanoseconds
+    uint64_t absoluteNanos = absoluteTime * info.numer / info.denom;
+
+    uint64_t absoluteNowNanos = mach_absolute_time() * info.numer / info.denom;
+
+    // Step 5: Convert to seconds
+    NSTimeInterval absoluteSeconds = (NSTimeInterval)absoluteNanos / 1e9;
+    NSTimeInterval absoluteNowSeconds = (NSTimeInterval)absoluteNowNanos / 1e9;
+
+    // Step 6: Add to a reference NSDate (assuming now is the reference)
+    NSDate *referenceDate = [NSDate date];
+    NSDate *resultDate =
+        [referenceDate dateByAddingTimeInterval:-(absoluteNowSeconds - absoluteSeconds)];
+
+    return resultDate;
 }
 
 - (void)binaryImageRemoved:(const SentryCrashBinaryImage *)image
@@ -97,6 +124,19 @@ SentryBinaryImageCache ()
     }
 
     return -1; // Address not found
+}
+
+- (NSArray<SentryBinaryImageInfo *> *)imagesSortedByAddedDate
+{
+    NSMutableArray *copy = _cache.mutableCopy;
+
+    [copy sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        SentryBinaryImageInfo *image1 = (SentryBinaryImageInfo *)obj1;
+        SentryBinaryImageInfo *image2 = (SentryBinaryImageInfo *)obj2;
+        return [image1.startReadingPages compare:image2.startReadingPages];
+    }];
+
+    return copy;
 }
 
 @end

@@ -14,6 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation SentryCrashWrapper
 
++ (void)load
+{
+    sentrycrashbic_startCache();
+}
+
 + (instancetype)sharedInstance
 {
     static SentryCrashWrapper *instance = nil;
