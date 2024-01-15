@@ -142,6 +142,8 @@ typedef void (^SentryOnAppStartMeasurementAvailable)(
  */
 @property (class, nonatomic, assign, readonly) SentryScreenFrames *currentScreenFrames;
 
+@property (class, nonatomic, readonly, strong) NSMutableArray<id<SentrySpan>> *finishedNetworkSpans;
+
 /**
  * @warning This feature is not available in @c Debug_without_UIKit and @c Release_without_UIKit
  * configurations even when targeting iOS or tvOS platforms.

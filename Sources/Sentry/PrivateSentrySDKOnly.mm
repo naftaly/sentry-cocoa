@@ -8,6 +8,7 @@
 #import "SentryInstallation.h"
 #import "SentryInternalDefines.h"
 #import "SentryMeta.h"
+#import "SentryNetworkTracker.h"
 #import "SentryProfiledTracerConcurrency.h"
 #import "SentryProfiler.h"
 #import "SentrySDK+Private.h"
@@ -153,6 +154,11 @@ static BOOL _framesTrackingMeasurementHybridSDKMode = NO;
 + (void)discardProfilerForTrace:(SentryId *)traceId;
 {
     discardProfilerForTracer(traceId);
+}
+
++ (NSMutableArray<id<SentrySpan>> *)finishedNetworkSpans
+{
+    return SentryNetworkTracker.sharedInstance.finishedSpans;
 }
 
 #endif // SENTRY_TARGET_PROFILING_SUPPORTED

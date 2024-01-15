@@ -61,6 +61,7 @@ SentryNetworkTracker ()
         _isNetworkTrackingEnabled = NO;
         _isNetworkBreadcrumbEnabled = NO;
         _isCaptureFailedRequestsEnabled = NO;
+        _finishedSpans = [NSMutableArray new];
     }
     return self;
 }
@@ -170,29 +171,24 @@ SentryNetworkTracker ()
             return;
         }
 
-        [SentrySDK.currentHub.scope useSpan:^(id<SentrySpan> _Nullable innerSpan) {
-            if (innerSpan != nil) {
-                span = innerSpan;
-                netSpan =
-                    [span startChildWithOperation:SENTRY_NETWORK_REQUEST_OPERATION
-                                      description:[NSString stringWithFormat:@"%@ %@",
-                                                            sessionTask.currentRequest.HTTPMethod,
-                                                            safeUrl.sanitizedUrl]];
-                netSpan.origin = SentryTraceOriginAutoHttpNSURLSession;
+        span = [SentrySDK startTransactionWithName:@"foo" operation:@"bar"];
 
-                [netSpan setDataValue:sessionTask.currentRequest.HTTPMethod
-                               forKey:@"http.request.method"];
-                [netSpan setDataValue:safeUrl.sanitizedUrl forKey:@"url"];
-                [netSpan setDataValue:@"fetch" forKey:@"type"];
+        netSpan = [span startChildWithOperation:SENTRY_NETWORK_REQUEST_OPERATION
+                                    description:[NSString stringWithFormat:@"%@ %@",
+                                                          sessionTask.currentRequest.HTTPMethod,
+                                                          safeUrl.sanitizedUrl]];
+        netSpan.origin = SentryTraceOriginAutoHttpNSURLSession;
 
-                if (safeUrl.queryItems && safeUrl.queryItems.count > 0) {
-                    [netSpan setDataValue:safeUrl.query forKey:@"http.query"];
-                }
-                if (safeUrl.fragment != nil) {
-                    [netSpan setDataValue:safeUrl.fragment forKey:@"http.fragment"];
-                }
-            }
-        }];
+        [netSpan setDataValue:sessionTask.currentRequest.HTTPMethod forKey:@"http.request.method"];
+        [netSpan setDataValue:safeUrl.sanitizedUrl forKey:@"url"];
+        [netSpan setDataValue:@"fetch" forKey:@"type"];
+
+        if (safeUrl.queryItems && safeUrl.queryItems.count > 0) {
+            [netSpan setDataValue:safeUrl.query forKey:@"http.query"];
+        }
+        if (safeUrl.fragment != nil) {
+            [netSpan setDataValue:safeUrl.fragment forKey:@"http.fragment"];
+        }
 
         // We only create a span if there is a transaction in the scope,
         // otherwise we have nothing else to do here.
@@ -341,6 +337,7 @@ SentryNetworkTracker ()
     }
 
     [netSpan finishWithStatus:[self statusForSessionTask:sessionTask state:newState]];
+    [_finishedSpans addObject:netSpan];
     SENTRY_LOG_DEBUG(@"SentryNetworkTracker finished HTTP span for sessionTask");
 }
 

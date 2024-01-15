@@ -3,6 +3,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class SentryOptions;
+@protocol SentrySpan;
 
 static NSString *const SENTRY_NETWORK_REQUEST_OPERATION = @"http.client";
 static NSString *const SENTRY_NETWORK_REQUEST_TRACKER_SPAN = @"SENTRY_NETWORK_REQUEST_TRACKER_SPAN";
@@ -24,6 +25,8 @@ static NSString *const SENTRY_NETWORK_REQUEST_TRACKER_BREADCRUMB
 @property (nonatomic, readonly) BOOL isNetworkTrackingEnabled;
 @property (nonatomic, readonly) BOOL isNetworkBreadcrumbEnabled;
 @property (nonatomic, readonly) BOOL isCaptureFailedRequestsEnabled;
+
+@property (nonatomic, strong) NSMutableArray<id<SentrySpan>> *finishedSpans;
 
 @end
 
