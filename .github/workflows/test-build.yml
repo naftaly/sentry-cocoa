@@ -1,0 +1,42 @@
+name: Build
+on:
+  push:
+    branches:
+      - test/update-package
+
+# https://docs.github.com/en/actions/using-jobs/using-concurrency#example-using-a-fallback-value
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-xcframework:
+    name: Build XCFramework
+    # The macos-13 uses an Intel processor and doesn't compile the XCFramework for visionOS.
+    # The large image compiles on arm64 and successfully creates the XCFramework for visionOS.
+    runs-on: macos-13-xlarge
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/ci-select-xcode.sh 15.2
+      - run: make build-xcframework
+        shell: sh
+      
+      - name: Update Package.swift
+        run: ./scripts/update-package-sha.sh "${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" ${{ github.workspace }}/Carthage/Sentry.xcframework.zip
+        
+
+      - name: Archiving XCFramework.zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/Carthage/*.zip
+
+      - name: Archive build log if failed
+        uses: actions/upload-artifact@v4
+        if: ${{  failure() || cancelled() }}
+        with:
+          name: raw-build-output-build-xcframework
+          path: |
+            build-xcframework.log
