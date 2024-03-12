@@ -2,6 +2,8 @@
 
 #import "SentryBaggage.h"
 #import "SentryBaseIntegration.h"
+#import "SentryEnvelope.h"
+#import "SentryEnvelopeItemType.h"
 #import "SentryRandom.h"
 #import "SentrySdkInfo.h"
 #import "SentryTime.h"

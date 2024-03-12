@@ -1,3 +1,4 @@
+import _SentryPrivate
 import ObjectiveC
 import SentryTestUtils
 import XCTest

@@ -100,7 +100,6 @@
 #import "SentryDisplayLinkWrapper.h"
 #import "SentryDsn.h"
 #import "SentryEnvelope+Private.h"
-#import "SentryEnvelopeItemType.h"
 #import "SentryEnvelopeRateLimit.h"
 #import "SentryEvent+Private.h"
 #import "SentryFileContents.h"

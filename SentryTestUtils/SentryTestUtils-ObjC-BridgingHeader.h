@@ -30,7 +30,6 @@
 #import "SentryDispatchFactory.h"
 #import "SentryDispatchQueueWrapper.h"
 #import "SentryDispatchSourceWrapper.h"
-#import "SentryEnvelope.h"
 #import "SentryFileManager+Test.h"
 #import "SentryGlobalEventProcessor.h"
 #import "SentryLog.h"

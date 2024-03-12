@@ -1,13 +1,6 @@
 #import "PrivatesHeader.h"
 
-#if COCOAPODS
 @class SentrySdkInfo, SentryTraceContext;
-#else
-#    import "SentrySdkInfo.h"
-#    import "SentryTraceContext.h"
-
-#endif
-
 @class SentryEvent, SentrySession, SentryId, SentryUserFeedback, SentryAttachment,
     SentryTransaction, SentryClientReport, SentryEnvelopeItemHeader;
 
