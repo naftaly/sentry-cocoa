@@ -42,12 +42,4 @@ final class GaugeMetricTests: XCTestCase {
         // The weight stays the same
         expect(sut.weight) == 5
     }
-    
-//    name0-string@unit0:-137262718|s|#key0:value0|T20
-//    name0@second:0.002515666|d|#key0:value0|T20
-//    name0@unit0:1.0|c|#key0:value0|T20
-//    name0@unit0:1.0|d|#key0:value0|T20
-//    name0-int@unit0:4321:1234|s|#key0:value0|T20
-//    name0@unit0:2.0:1.0:2.0:3.0:2|g|#key0:value0|T20
-
 }

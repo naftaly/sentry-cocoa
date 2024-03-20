@@ -85,7 +85,7 @@ class BucketMetricsAggregator: MetricsAggregator {
         lock.synchronized {
             var bucket = buckets[bucketTimestamp] ?? [:]
             
-            let metric = bucket[bucketKey] ?? getMetric(first: value, type: type, key: key, unit: unit, tags: tags)
+            let metric = bucket[bucketKey] ?? initMetric(first: value, type: type, key: key, unit: unit, tags: tags)
             let metricExists = bucket[bucketKey] != nil
             if metricExists {
                 metric.add(value: value)
@@ -110,7 +110,7 @@ class BucketMetricsAggregator: MetricsAggregator {
         }
     }
     
-    private func getMetric(first: Double, type: MetricType, key: String, unit: MeasurementUnit, tags: [String: String]) -> Metric {
+    private func initMetric(first: Double, type: MetricType, key: String, unit: MeasurementUnit, tags: [String: String]) -> Metric {
         switch type {
         case .counter:
             return CounterMetric(first: first, key: key, unit: unit, tags: tags)
