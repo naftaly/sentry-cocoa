@@ -35,9 +35,9 @@ class BucketMetricsAggregator: MetricsAggregator {
         currentDate: SentryCurrentDateProvider,
         dispatchQueue: SentryDispatchQueueWrapper,
         random: SentryRandomProtocol,
-        totalMaxWeight: UInt = METRICS_AGGREGATOR_TOTAL_MAX_WEIGHT,
-        flushInterval: TimeInterval = METRICS_AGGREGATOR_FLUSH_INTERVAL,
-        flushTolerance: TimeInterval = METRICS_AGGREGATOR_FLUSH_TOLERANCE
+        totalMaxWeight: UInt = 1_000,
+        flushInterval: TimeInterval = 10.0,
+        flushTolerance: TimeInterval = 0.5
     ) {
         self.client = client
         self.currentDate = currentDate
