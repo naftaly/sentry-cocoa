@@ -30,27 +30,14 @@ class BucketMetricsAggregator: MetricsAggregator {
     private var buckets: [BucketTimestamp: [String: Metric]] = [:]
     private let lock = NSLock()
 
-    convenience init(client: SentryMetricsClient, currentDate: SentryCurrentDateProvider, dispatchQueue: SentryDispatchQueueWrapper, random: SentryRandomProtocol) {
-
-        self.init(
-            client: client,
-            currentDate: currentDate,
-            dispatchQueue: dispatchQueue,
-            random: random,
-            totalMaxWeight: METRICS_AGGREGATOR_TOTAL_MAX_WEIGHT,
-            flushInterval: METRICS_AGGREGATOR_FLUSH_INTERVAL,
-            flushTolerance: METRICS_AGGREGATOR_FLUSH_TOLERANCE
-        )
-    }
-
     init(
         client: SentryMetricsClient,
         currentDate: SentryCurrentDateProvider,
         dispatchQueue: SentryDispatchQueueWrapper,
         random: SentryRandomProtocol,
-        totalMaxWeight: UInt,
-        flushInterval: TimeInterval,
-        flushTolerance: TimeInterval
+        totalMaxWeight: UInt = METRICS_AGGREGATOR_TOTAL_MAX_WEIGHT,
+        flushInterval: TimeInterval = METRICS_AGGREGATOR_FLUSH_INTERVAL,
+        flushTolerance: TimeInterval = METRICS_AGGREGATOR_FLUSH_TOLERANCE
     ) {
         self.client = client
         self.currentDate = currentDate
@@ -88,7 +75,7 @@ class BucketMetricsAggregator: MetricsAggregator {
 
         // It's important to sort the tags in order to
         // obtain the same bucket key.
-        let tagsKey = tags.sorted(by: { $0.key < $1.key }).description
+        let tagsKey = tags.sorted(by: { $0.key < $1.key }).map({ "\($0.key)=\($0.value)" }).joined(separator: ",")
         let bucketKey = "\(type)_\(key)_\(unit.unit)_\(tagsKey)"
 
         let bucketTimestamp = currentDate.bucketTimestamp
