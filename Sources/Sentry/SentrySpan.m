@@ -39,6 +39,7 @@ SentrySpan ()
     NSUInteger initSlowFrames;
     NSUInteger initFrozenFrames;
     SentryFramesTracker *_framesTracker;
+    LocalMetricsAggregator *localMetricsAggregator;
 #endif // SENTRY_HAS_UIKIT
 }
 
@@ -247,6 +248,14 @@ SentrySpan ()
                                               sampled:self.sampled];
 }
 
+- (LocalMetricsAggregator *)getLocalMetricsAggregator
+{
+    if (localMetricsAggregator == nil) {
+        localMetricsAggregator = [[LocalMetricsAggregator alloc] init];
+    }
+    return localMetricsAggregator;
+}
+
 - (NSDictionary *)serialize
 {
     NSMutableDictionary *mutableDictionary = @{
@@ -286,6 +295,10 @@ SentrySpan ()
 
     [mutableDictionary setValue:@(self.startTimestamp.timeIntervalSince1970)
                          forKey:@"start_timestamp"];
+
+    if (localMetricsAggregator != nil) {
+        mutableDictionary[@"_metrics_summary"] = [localMetricsAggregator serialize];
+    }
 
     @synchronized(_data) {
         NSMutableDictionary *data = _data.mutableCopy;

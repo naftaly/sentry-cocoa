@@ -107,6 +107,11 @@ static NSDate *_Nullable startTimestamp = nil;
     return currentHub != nil && [currentHub getClient] != nil;
 }
 
++ (SentryMetricsAPI *)metrics
+{
+    return currentHub.metrics;
+}
+
 + (BOOL)crashedLastRunCalled
 {
     return crashedLastRunCalled;
@@ -475,6 +480,8 @@ static NSDate *_Nullable startTimestamp = nil;
     // https://github.com/getsentry/sentry-cocoa/issues/2455
     [[SentryDependencyContainer sharedInstance].appStateManager stopWithForce:YES];
 #endif
+
+    [hub.metrics close];
 
     [hub close];
     [hub bindClient:nil];

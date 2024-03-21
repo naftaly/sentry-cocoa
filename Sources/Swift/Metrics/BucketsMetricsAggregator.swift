@@ -157,7 +157,11 @@ class BucketMetricsAggregator: MetricsAggregator {
                     buckets.removeValue(forKey: bucketTimestamp)
                 }
 
-                totalBucketsWeight -= weightToRemove
+                if weightToRemove <= totalBucketsWeight {
+                    totalBucketsWeight -= weightToRemove
+                } else {
+                    totalBucketsWeight = 0
+                }
             }
         }
 

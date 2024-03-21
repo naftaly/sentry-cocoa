@@ -1,6 +1,7 @@
 #import "SentryClient+Private.h"
 #import "SentryCrashWrapper.h"
 #import "SentryDependencyContainer.h"
+#import "SentryDispatchQueueWrapper.h"
 #import "SentryEnvelope.h"
 #import "SentryEnvelopeItemHeader.h"
 #import "SentryEnvelopeItemType.h"
@@ -21,6 +22,7 @@
 #import "SentryScope+Private.h"
 #import "SentrySerialization.h"
 #import "SentrySession+Private.h"
+#import "SentryStatsdClient.h"
 #import "SentrySwift.h"
 #import "SentryTraceOrigins.h"
 #import "SentryTracer.h"
@@ -34,7 +36,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface
-SentryHub ()
+SentryHub () <SentryMetricsAPIDelegate>
 
 @property (nullable, nonatomic, strong) SentryClient *client;
 @property (nullable, nonatomic, strong) SentryScope *scope;
@@ -56,6 +58,17 @@ SentryHub ()
     if (self = [super init]) {
         _client = client;
         _scope = scope;
+        SentryStatsdClient *statsdClient = [[SentryStatsdClient alloc] initWithClient:client];
+        SentryMetricsClient *metricsClient =
+            [[SentryMetricsClient alloc] initWithClient:statsdClient];
+        _metrics = [[SentryMetricsAPI alloc]
+            initWithEnabled:client.options.enableMetrics
+                     client:metricsClient
+                currentDate:SentryDependencyContainer.sharedInstance.dateProvider
+              dispatchQueue:SentryDependencyContainer.sharedInstance.dispatchQueueWrapper
+                     random:SentryDependencyContainer.sharedInstance.random];
+        [_metrics setDelegate:self];
+
         _sessionLock = [[NSObject alloc] init];
         _integrationsLock = [[NSObject alloc] init];
         _installedIntegrations = [[NSMutableArray alloc] init];
@@ -682,7 +695,23 @@ SentryHub ()
 - (void)close
 {
     [_client close];
+    [_metrics close];
     SENTRY_LOG_DEBUG(@"Closed the Hub.");
+}
+
+- (LocalMetricsAggregator *_Nullable)getLocalMetricsAggregator
+{
+    id<SentrySpan> currentSpan = _scope.span;
+
+    if ([currentSpan respondsToSelector:@selector(getLocalMetricsAggregator)]) {
+        id<SentrySpan> childSpan = [currentSpan startChildWithOperation:@"metric.test"];
+        [SentryDependencyContainer.sharedInstance.dispatchQueueWrapper
+            dispatchAfter:0.01
+                    block:^{ [childSpan finish]; }];
+        return [(SentrySpan *)childSpan getLocalMetricsAggregator];
+    }
+
+    return nil;
 }
 
 #pragma mark - Protected
