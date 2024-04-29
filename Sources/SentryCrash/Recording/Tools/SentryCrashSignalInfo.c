@@ -62,7 +62,7 @@ static const SentryCrashSignalCodeInfo g_sigIllCodes[] = {
     ENUM_NAME_MAPPING(ILL_BADSTK),
 };
 
-#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
+#if defined(SENTRY_SIGTRAP_ENABLED)
 static const SentryCrashSignalCodeInfo g_sigTrapCodes[] = {
     ENUM_NAME_MAPPING(0),
     ENUM_NAME_MAPPING(TRAP_BRKPT),
@@ -118,7 +118,7 @@ static const SentryCrashSignalInfo g_fatalSignalData[] = {
     SIGNAL_INFO_NOCODES(SIGPIPE),
     SIGNAL_INFO(SIGSEGV, g_sigSegVCodes),
     SIGNAL_INFO_NOCODES(SIGSYS),
-#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
+#if defined(SENTRY_SIGTRAP_ENABLED)
     SIGNAL_INFO(SIGTRAP, g_sigTrapCodes),
 #endif
     SIGNAL_INFO_NOCODES(SIGTERM),
@@ -135,7 +135,7 @@ static const int g_fatalSignals[] = {
     SIGPIPE,
     SIGSEGV,
     SIGSYS,
-#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
+#if defined(SENTRY_SIGTRAP_ENABLED)
     SIGTRAP,
 #endif
 
