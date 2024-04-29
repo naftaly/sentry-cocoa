@@ -26,6 +26,7 @@
 //
 
 #include "SentryCrashSignalInfo.h"
+#include "SentryCPU.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -61,11 +62,13 @@ static const SentryCrashSignalCodeInfo g_sigIllCodes[] = {
     ENUM_NAME_MAPPING(ILL_BADSTK),
 };
 
+#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
 static const SentryCrashSignalCodeInfo g_sigTrapCodes[] = {
     ENUM_NAME_MAPPING(0),
     ENUM_NAME_MAPPING(TRAP_BRKPT),
     ENUM_NAME_MAPPING(TRAP_TRACE),
 };
+#endif
 
 static const SentryCrashSignalCodeInfo g_sigFPECodes[] = {
 #ifdef FPE_NOOP
@@ -115,7 +118,9 @@ static const SentryCrashSignalInfo g_fatalSignalData[] = {
     SIGNAL_INFO_NOCODES(SIGPIPE),
     SIGNAL_INFO(SIGSEGV, g_sigSegVCodes),
     SIGNAL_INFO_NOCODES(SIGSYS),
+#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
     SIGNAL_INFO(SIGTRAP, g_sigTrapCodes),
+#endif
     SIGNAL_INFO_NOCODES(SIGTERM),
 };
 static const int g_fatalSignalsCount = sizeof(g_fatalSignalData) / sizeof(*g_fatalSignalData);
@@ -130,7 +135,9 @@ static const int g_fatalSignals[] = {
     SIGPIPE,
     SIGSEGV,
     SIGSYS,
+#if defined(SENTRY_CPU_ARM64) || defined(SENTRY_CPU_ARM)
     SIGTRAP,
+#endif
 
     // SIGTERM can be caught and is usually sent by iOS and variants
     // when Apple wants to try and gracefully shutdown the app
